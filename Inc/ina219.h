@@ -4,7 +4,7 @@ extern "C" {
 #endif
 #include <stdint.h>
 #include <stdbool.h>
-#include "stm32u0xx_hal.h"   // adjust family include if needed
+#include "main.h"   // adjust family include if needed
 
 // Default INA219 7-bit address (0x40..0x4F). HAL expects 8-bit left-shifted.
 #define INA219_I2C_ADDR_7B_DEFAULT   (0x45)

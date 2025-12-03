@@ -1,14 +1,14 @@
 #include "battery_adc.h"
 #include "pins_config.h"
 
-#include "stm32u0xx_hal.h"   /* or your device family header if different */
-extern ADC_HandleTypeDef hadc1;  /* provided by CubeMX (MX_ADC1_Init) */
+#include "main.h"   /* or your device family header if different */
+extern ADC_HandleTypeDef hadc;  /* provided by CubeMX (MX_ADC1_Init) */
 
 static inline uint16_t adc_read_once(void) {
-    HAL_ADC_Start(&hadc1);
-    HAL_ADC_PollForConversion(&hadc1, 10);             // 10 ms timeout
-    uint16_t val = (uint16_t)HAL_ADC_GetValue(&hadc1);
-    HAL_ADC_Stop(&hadc1);
+    HAL_ADC_Start(&hadc);
+    HAL_ADC_PollForConversion(&hadc, 10);             // 10 ms timeout
+    uint16_t val = (uint16_t)HAL_ADC_GetValue(&hadc);
+    HAL_ADC_Stop(&hadc);
     return val;
 }
 

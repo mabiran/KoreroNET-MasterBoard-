@@ -135,7 +135,7 @@ static float soc_from_voltage(float vbat) {
 
 /* Private variables ---------------------------------------------------------*/
 COM_InitTypeDef BspCOMInit;
-__IO uint32_t BspButtonState = BUTTON_RELEASED;
+//__IO uint32_t BspButtonState = BUTTON_RELEASED;
 
 /* NOTE: Peripheral handles are defined in adc.c/i2c.c/usart.c/rtc.c by CubeMX.
    Do NOT define them here to avoid multiple-definition link errors. */
@@ -298,8 +298,8 @@ int main(void)
 
   /* Initialize all configured peripherals (implementations are in CubeMX .c files) */
   MX_GPIO_Init();
-  MX_ADC1_Init();
-  MX_I2C1_Init();
+  MX_ADC_Init();
+  MX_I2C2_Init();
   MX_USART1_UART_Init();
 #if defined(HAL_RTC_MODULE_ENABLED)
   MX_RTC_Init();
@@ -307,10 +307,35 @@ int main(void)
 
   /* Start UART1 RX interrupt (1 byte at a time) */
   HAL_UART_Receive_IT(&huart1, &uart1_rx_byte, 1);
+#if defined(HAL_RTC_MODULE_ENABLED)
+{
+    RTC_TimeTypeDef t_bcd;
+    RTC_DateTypeDef d_bcd;
+    uint32_t magic = HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR0);
+
+    HAL_RTC_GetTime(&hrtc, &t_bcd, RTC_FORMAT_BCD);
+    HAL_RTC_GetDate(&hrtc, &d_bcd, RTC_FORMAT_BCD);
+
+    uint8_t dd = bcd2bin(d_bcd.Date);
+    uint8_t mm = bcd2bin(d_bcd.Month);
+    uint8_t yy = bcd2bin(d_bcd.Year);
+    uint8_t hh = bcd2bin(t_bcd.Hours);
+    uint8_t mi = bcd2bin(t_bcd.Minutes);
+    uint8_t ss = bcd2bin(t_bcd.Seconds);
+
+    char msg[96];
+    snprintf(msg, sizeof(msg),
+             "BOOT: BKP_DR0=0x%08lX  %02u/%02u/%04u %02u:%02u:%02u\r\n",
+             (unsigned long)magic,
+             (unsigned)dd, (unsigned)mm, (unsigned)(2000u + yy),
+             (unsigned)hh, (unsigned)mi, (unsigned)ss);
+    UART1_Send(msg);
+}
+#endif
 
   /* Initialize leds and button via BSP */
   BSP_LED_Init(LED_GREEN);
-  BSP_PB_Init(BUTTON_USER, BUTTON_MODE_EXTI);
+  //BSP_PB_Init(BUTTON_USER, BUTTON_MODE_EXTI);
 
   /* Optional COM settings (not used directly below) */
   BspCOMInit.BaudRate   = 115200;
@@ -322,7 +347,7 @@ int main(void)
   /* USER CODE BEGIN BSP */
   /* Configure INA219 (short timeout) */
   uint8_t ina_cfg[3] = { INA_REG_CONFIG, 0x39, 0x9F }; /* 32V, ±320mV, 12b, cont */
-  (void)HAL_I2C_Master_Transmit(&hi2c1, INA219_ADDR, ina_cfg, 3, 10);
+  (void)HAL_I2C_Master_Transmit(&hi2c2, INA219_ADDR, ina_cfg, 3, 10);
 
   /* Seed coulomb counter from ADC voltage on cold boot */
   float v_bat_boot = Battery_ReadVoltage(32);
@@ -429,7 +454,7 @@ int main(void)
     }
 
     /* Heartbeat blink (BSP LED) */
-   // BSP_LED_Toggle(LED_GREEN);
+    BSP_LED_Toggle(LED_GREEN);
     HAL_Delay(250);
   }
 }
@@ -490,8 +515,8 @@ void SystemClock_Config(void)
 /* --- I2C utility with short timeouts --- */
 static int i2c_read_reg(uint8_t reg, uint8_t *buf, uint32_t len) {
   const uint32_t TO = 10; // ms
-  if (HAL_I2C_Master_Transmit(&hi2c1, INA219_ADDR, &reg, 1, TO) != HAL_OK) return 0;
-  if (HAL_I2C_Master_Receive (&hi2c1, INA219_ADDR, buf, len, TO)   != HAL_OK) return 0;
+  if (HAL_I2C_Master_Transmit(&hi2c2, INA219_ADDR, &reg, 1, TO) != HAL_OK) return 0;
+  if (HAL_I2C_Master_Receive (&hi2c2, INA219_ADDR, buf, len, TO)   != HAL_OK) return 0;
   return 1;
 }
 
@@ -1648,12 +1673,7 @@ static void TT_PrintCurrent(void)
 /**
   * @brief  BSP Push Button callback
   */
-void BSP_PB_Callback(Button_TypeDef Button)
-{
-  if (Button == BUTTON_USER) {
-    BspButtonState = BUTTON_PRESSED;
-  }
-}
+
 
 /**
   * @brief  This function is executed in case of error occurrence.

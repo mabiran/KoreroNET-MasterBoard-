@@ -2,8 +2,8 @@
 #include "main.h"   // gives you *_Pin and *_GPIO_Port from Cube labels
 
 /* --- ADC & divider parameters --- */
-#define VBAT_RTOP_OHMS      (56000.0f)
-#define VBAT_RBOT_OHMS      (14942.0f)
+#define VBAT_RTOP_OHMS      (56060.0f)
+#define VBAT_RBOT_OHMS      (14711.0f)
 #define VBAT_DIVIDER_GAIN   ((VBAT_RTOP_OHMS + VBAT_RBOT_OHMS) / VBAT_RBOT_OHMS)  /* ~4.748 */
 #define ADC_VREF_VOLT       (3.3f)
 #define ADC_FULL_SCALE      (4095.0f)
@@ -37,7 +37,7 @@
 
 #define RPI_WAKE_GPIO_Port   GPIOB
 #define RPI_WAKE_Pin         GPIO_PIN_10
-#define AM_CONFIG_Port   	 GPIOA    //Third wire (Black)
-#define AM_CONFIG_Pin		 GPIO_PIN_8
+#define AM_CONFIG_Port   	 GPIOC    //Third wire (Black)
+#define AM_CONFIG_Pin		 GPIO_PIN_1
 #define AM_REC_Port    		 GPIOB		//Fourth wire (White)
 #define AM_REC_Pin			 GPIO_PIN_3
