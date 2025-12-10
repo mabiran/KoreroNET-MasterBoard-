@@ -1,4 +1,4 @@
-# KōreroNET STM32-U0 Node — Firmware Overview & UART Protocol
+# KōreroNET  — Firmware Overview & UART Protocol
 
 This repository contains the STM32U0 firmware that runs the low-power KōreroNET field node. It controls the AudioMoth recorder, talks to a Raspberry Pi over UART, schedules duty-cycled recording (audible/ultrasonic modes), monitors power using an INA219 shunt monitor and an ADC battery divider, and keeps a rolling 25-hour power history for the Pi to fetch.
 
